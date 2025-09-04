@@ -474,9 +474,7 @@ chown db2inst1:db2iadm1 /mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1/NOD
 ```
 
 
-After these steps, confirm that Db2 can start and then once you can connect to Db2, use the below commands for the automation to pick up the fix
-
-Run the below commands as Db2 instance owner to take the backup of the container tags, as this backup will be used to restore the container tags when the pod starts again:
+After these steps, confirm that Db2 can start and then once you can connect to Db2, run the below commands as Db2 instance owner to take the backup of the container tags, as this backup will be used to restore the container tags when the pod starts again:
 
 ```
 sudo rsync -rdgop \--numeric-ids \--checksum \--exclude \'\*TLB\' \--exclude \'\*TDA\' \--exclude \'\*TBA\'
@@ -501,15 +499,15 @@ cpd-cli service-instance list \
 Set the INSTANCE_NAME to the name of the service instance:
 
 ```
-export INSTANCE_NAME=\<instance-name\>
+export INSTANCE_NAME=<instance-name>
 ```
 
 Check whether your Db2 service instances are in running state:
 
 ```
-cpd-cli service-instance status \${INSTANCE_NAME} \
-\--profile=\${CPD_PROFILE_NAME} \
-\--service-type=db2oltp
+cpd-cli service-instance status ${INSTANCE_NAME} \
+--profile=\${CPD_PROFILE_NAME} \
+--service-type=db2oltp
 ```
 
 Upgrade the db2oltp service instance (est. 10 minutes)
@@ -518,7 +516,7 @@ Upgrade the db2oltp service instance (est. 10 minutes)
 cpd-cli service-instance upgrade \
 --service-type=db2oltp \
 --instance-name=\${INSTANCE_NAME} \
---profile=\${CPD_PROFILE_NAME}
+--profile=${CPD_PROFILE_NAME}
 ```
 
 Verifying the service instance upgrade:
@@ -533,7 +531,7 @@ Run the following command to check the status of your Db2 service instances:
 
 ```
 cpd-cli service-instance status ${INSTANCE_NAME} \
---profile=\${CPD_PROFILE_NAME} \
+--profile=${CPD_PROFILE_NAME} \
 --service-type=db2oltp
 ```
 
@@ -541,7 +539,7 @@ Run the following command to check that the service instances have updated:
 
 ```
 cpd-cli service-instance list \
---profile=\${CPD_PROFILE_NAME} \
+--profile=${CPD_PROFILE_NAME} \
 --service-type=db2oltp
 ```
 
@@ -588,10 +586,10 @@ Update the custom resource for Data Gate:
 ```
 cpd-cli manage apply-cr \
 --components=datagate \
---release=\${VERSION} \
---cpd_instance_ns=\${PROJECT_CPD_INST_OPERANDS} \
---block_storage_class=\${STG_CLASS_BLOCK} \
---file_storage_class=\${STG_CLASS_FILE} \
+--release=${VERSION} \
+--cpd_instance_ns=${PROJECT_CPD_INST_OPERANDS} \
+--block_storage_class=${STG_CLASS_BLOCK} \
+--file_storage_class=${STG_CLASS_FILE} \
 --license_acceptance=true \
 --upgrade=true
 ```
@@ -604,7 +602,7 @@ If you want to confirm that the custom resource status is Completed, you can run
 
 ```
 cpd-cli manage get-cr-status \
---cpd_instance_ns=\${PROJECT_CPD_INST_OPERANDS} \
+--cpd_instance_ns=${PROJECT_CPD_INST_OPERANDS} \
 --components=datagate
 ```
 
@@ -623,7 +621,7 @@ Ensure the CPD profile is set up:
 cpd-cli service-instance upgrade \
 --all \
 --service-type=dg \
---profile=\${CPD_PROFILE_NAME} \
+--profile=${CPD_PROFILE_NAME} \
 --watch
 ```
 
@@ -638,7 +636,7 @@ oc get dginstance \<instance_id\> -o jsonpath=\'{.status.datagateInstanceStatus}
 Run the following command and see if the Provision status has changed to UPGRADED:
 
 ```
-watch cpd-cli service-instance list \--profile=\${CPD_PROFILE_NAME} \--service-type dg
+watch cpd-cli service-instance list \--profile=${CPD_PROFILE_NAME} \--service-type dg
 ```
 
 **Potential issue after the upgrade of Data Gate service instances**
@@ -657,111 +655,77 @@ You can also [change configuration settings](https://www.ibm.com/docs/en/softwar
 
 ## 9. All Potential Issues
 
-1. Setup-instance command will fail with 'imagepullbackoff' errors if
-the storage test images are missing -\> Mirror the storage test images
-ahead of time or exclude the '--run_storage_tests' flag
+1. Setup-instance command will fail with 'imagepullbackoff' errors if the storage test images are missing. Mirror the storage test images ahead of time or exclude the '--run_storage_tests' flag
 
-2. For imagepullbackoff errors, ensure that all required images are
-mirrored to the private registry, for example -\> skopeo copy
-docker://icr.io/cpopen/ibm-operator-catalog@sha256:01712920b400fba751f60c71c27fbd64ca1b59b6cd325c42ae691f0b8770133d
-docker://lpdza532.phx.aexp.com:5000/cpopen/ibm-operator-catalog@sha256:01712920b400fba751f60c71c27fbd64ca1b59b6cd325c42ae691f0b8770133d
-\--all \--remove-signatures
-\--authfile=/var/registry/oc4.7/installer/pullsecret/merged_pullsecret.json
+2. For imagepullbackoff errors, ensure that all required images are mirrored to the private registry, for example:
 
-3. For insufficient CPU, insufficient memory, untolerated taint issues,
-ensure there are enough resources available on the cluster -\> Perform a
-pre-upgrade health check to ensure the cluster is in a healthy state
+```
+skopeo copy docker://icr.io/cpopen/ibm-operator-catalog@sha256:01712920b400fba751f60c71c27fbd64ca1b59b6cd325c42ae691f0b8770133d docker://lpdza532.phx.aexp.com:5000/cpopen/ibm-operator-catalog@sha256:01712920b400fba751f60c71c27fbd64ca1b59b6cd325c42ae691f0b8770133d \--all \--remove-signatures \--authfile=/var/registry/oc4.7/installer/pullsecret/merged_pullsecret.json
+```
+
+3. For insufficient CPU, insufficient memory, untolerated taint issues, ensure there are enough resources available on the cluster. Perform a pre-upgrade health check to ensure the cluster is in a healthy state
 prior to the upgrade
 
-4. If the Db2 license is not upgraded to the compatible version you may
-run into issues during Db2 instance upgrade. Follow the steps to
-"[Upgrade the license before you deploy
-Db2](https://www.ibm.com/docs/en/software-hub/5.2.x?topic=setup-upgrading-license-before-you-deploy-db2)"
+4. If the Db2 license is not upgraded to the compatible version you may run into issues during Db2 instance upgrade. Follow the steps to "[Upgrade the license before you deploy Db2](https://www.ibm.com/docs/en/software-hub/5.2.x?topic=setup-upgrading-license-before-you-deploy-db2)"
 
-5. During the Db2 instance upgrade, the Db2ckupgrade.sh utility runs a
-job that must be scheduled to the same node as the Db2 engine pod. To
-resolve this issue, restrict the job to run on the same node as the
-engine pod. Use a cordon, to ensure that this job is scheduled to the
-node hosting Db2. In previous upgrades, we've cordoned nodes lpqzo504,
-lpqzo505, and lpqzo506, such that the job would be scheduled to lpqzo507
+5. During the Db2 instance upgrade, the Db2ckupgrade.sh utility runs a job that must be scheduled to the same node as the Db2 engine pod. To resolve this issue, restrict the job to run on the same node as the
+engine pod. Use a cordon, to ensure that this job is scheduled to the node hosting Db2. In previous upgrades, we've cordoned nodes lpqzo504, lpqzo505, and lpqzo506, such that the job would be scheduled to lpqzo507
 
-6. During the Db2 instance upgrade you may observe issues related to
-tempspace1, "Table space access is not allowed." This problem is related
-to the usage of local storage and results in missing files and missing
-folder structures within the Db2 pod. To address this, you will need to
-create a specific directory structure inside the Db2u pod and copy the
-container tag to this location.
+6. During the Db2 instance upgrade you may observe issues related to tempspace1, "Table space access is not allowed." This problem is related to the usage of local storage and results in missing files and missing
+folder structures within the Db2 pod. To address this, you will need to create a specific directory structure inside the Db2u pod and copy the container tag to this location.
 
-7. During Data Gate instance upgrade a
-dg-1750101262664465-backup-head-job pod runs, but it should be scheduled
-to any node where Db2 is not running -\> For this cordon the node
-hosting Db2, and after the backup-head-job pod is completed, uncordon
-the same node
+7. During Data Gate instance upgrade a dg-1750101262664465-backup-head-job pod runs, but it should be scheduled to any node where Db2 is not running. For this cordon the node hosting Db2, and after the backup-head-job pod is completed, uncordon the same node
 
-8. After Data Gate instances have been upgraded, it is possible that
-the configuration settings of the Db2 target database are not correctly
-migrated during the upgrade. Missing Db2 configuration settings can
-cause a variety of issues, as experienced most recently during the
-E3-IPC1 upgrade, in which the DB2COMM=TCPIP,SSL was missing. To resolve
-this, we had to add the missing Db2 setting by using 'db2set
-DB2COMM=TCPIP,SSL'. These configurations should persist through a Db2u
-pod recycle. Keep track of your Db2 configuration settings prior to
-upgrading to ensure you have a list of settings which you can restore.
-You can also [change configuration
-settings](https://www.ibm.com/docs/en/software-hub/5.2.x?topic=configuration-changing-db2-settings)
-after you deploy your instance
+8. After Data Gate instances have been upgraded, it is possible that the configuration settings of the Db2 target database are not correctly migrated during the upgrade. Missing Db2 configuration settings can
+cause a variety of issues, as experienced most recently during the E3-IPC1 upgrade, in which the DB2COMM=TCPIP,SSL was missing. To resolve this, we had to add the missing Db2 setting by using 'db2set
+DB2COMM=TCPIP,SSL'. These configurations should persist through a Db2u pod recycle. Keep track of your Db2 configuration settings prior to upgrading to ensure you have a list of settings which you can restore.
+You can also [change configuration settings](https://www.ibm.com/docs/en/software-hub/5.2.x?topic=configuration-changing-db2-settings) after you deploy your instance
 
 ## 10. Apply the Day 0 patch (if required)
 
-After you install or upgrade to IBM Software Hub Version 5.2.0, you must
-apply the [Version 5.2.0 - Day 0
-patch](https://www.ibm.com/support/pages/node/7236425) if you have any
-services with a dependency on the common core services.
+After you install or upgrade to IBM Software Hub Version 5.2.0, you must apply the [Version 5.2.0 - Day 0
+patch](https://www.ibm.com/support/pages/node/7236425) if you have any services with a dependency on the common core services.
 
-Download the script,
-[5.2.0-day0-patch-v5.sh](https://www.ibm.com/support/pages/system/files/inline-files/5.2.0-day0-patch-v5.sh),
-to your client workstation. Make the script executable:
+Download the script, [5.2.0-day0-patch-v5.sh] (https://www.ibm.com/support/pages/system/files/inline-files/5.2.0-day0-patch-v5.sh), to your client workstation. Make the script executable:
 
+```
 chmod +x ./5.2.0-day0-patch-v5.sh
+```
 
-If your cluster pulls images from a private container registry, copy the
-images for the Version 5.2.0 - Day 0 patch from the IBM Entitled
-Registry to your private container registry:
+If your cluster pulls images from a private container registry, copy the images for the Version 5.2.0 - Day 0 patch from the IBM Entitled Registry to your private container registry:
 
-nohup ./5.2.0-day0-patch-v5.sh \\
+```
+nohup ./5.2.0-day0-patch-v5.sh \
+--load \${PRIVATE_REGISTRY_LOCATION} \
+--as \${PRIVATE_REGISTRY_PUSH_USER} \
+--with \${PRIVATE_REGISTRY_PUSH_PASSWORD} \
+--entitlement \${IBM_ENTITLEMENT_KEY} \
+--operator \${PROJECT_CPD_INST_OPERATORS} \
+--yes > load_patch_images_output.log &
+```
 
-\--load \${PRIVATE_REGISTRY_LOCATION} \\
-
-\--as \${PRIVATE_REGISTRY_PUSH_USER} \\
-
-\--with \${PRIVATE_REGISTRY_PUSH_PASSWORD} \\
-
-\--entitlement \${IBM_ENTITLEMENT_KEY} \\
-
-\--operator \${PROJECT_CPD_INST_OPERATORS} \\
-
-\--yes \> load_patch_images_output.log &
 
 Apply the patch by running the following command:
 
-nohup ./5.2.0-day0-patch-v5.sh \\
+```
+nohup ./5.2.0-day0-patch-v5.sh \
+--operator \${PROJECT_CPD_INST_OPERATORS} \
+--yes > patch_install_output.log &
+```
 
-\--operator \${PROJECT_CPD_INST_OPERATORS} \\
+In a duplicate terminal, monitor patch progress by watching the patch_install_output.log file:
 
-\--yes \> patch_install_output.log &
-
-In a duplicate terminal, monitor patch progress by watching the
-patch_install_output.log file:
-
+```
 tail -f patch_install_output.log
+```
 
-The patch is successfully applied when you see the following log
-message:
+The patch is successfully applied when you see the following log message:
 
+```
 PASS: Apply Day 0 Patch has been successfully completed
+```
 
-This marks the end of the installation of IBM Software Hub, db2oltp and
-Data Gate
+This marks the end of the installation of IBM Software Hub, db2oltp and Data Gate
 
 ## 11. Validate CPD upgrade (customer acceptance test)
 
