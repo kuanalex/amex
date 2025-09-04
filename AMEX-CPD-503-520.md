@@ -361,7 +361,7 @@ If you run into issues with cpd-mgmt imagepullbackoff, you can run a command suc
 skopeo copy docker://icr.io/cpopen/cpd/olm-utils-v3@sha256:5a5b9b563756b3a41b22b2c9b6e940d3ceed6e12100e351809eb7f09ed058905 docker://lppza417.gso.aexp.com:5000/cpopen/cpd/olm-utils-v3@sha256:5a5b9b563756b3a41b22b2c9b6e940d3ceed6e12100e351809eb7f09ed058905 --all --remove-signatures --authfile=/root/merged_pullsecret.json
 ```
 
-Upgrade the operators in the operators project (est. 40 minutes):
+Upgrade the operators in the operators project (est. 15 minutes):
 
 ```
 cpd-cli manage apply-olm \
