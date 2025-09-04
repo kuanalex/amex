@@ -444,15 +444,6 @@ Db2 is upgraded when the apply-cr command returns:
 -   [Creating a profile to use the cpd-cli management
     commands](https://www.ibm.com/docs/en/software-hub/5.1.x?topic=cli-creating-cpd-profile)
 	
-Remove custom patches and override scripts, if applicable (DB2 pod will restart):
-
-```
-oc login OpenShift_URL:port
-```
-
-```
-oc set volume statefulset/c-${DB2U_ID}-db2u -n ${PROJECT_CPD_INST_OPERANDS} --remove --name=db2u-entrypoint-sh
-```
 
 **Potential issue during the upgrade of Db2 service instance with db2ckupgrade.sh utility**
 
