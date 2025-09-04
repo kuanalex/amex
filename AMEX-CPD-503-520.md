@@ -518,9 +518,19 @@ cpd-cli service-instance upgrade \
 --profile=${CPD_PROFILE_NAME}
 ```
 
-Verifying the service instance upgrade:
+If the Db2 instance upgrade starts looping, with error messages related to licensing, you may need to update the db2u-lic secret with the base64 encoded license key
 
-Run the following command and wait for the status to change to Ready:
+Update the db2u-lic secret with the new Db2 license:
+
+```
+oc get secret | grep db2u-lic
+```
+
+```
+oc edit secret db2u-lic
+```
+
+Verify the service instance upgrade by running the following command and waiting for the status to change to Ready:
 
 ```
 oc get db2ucluster <instance_id> -o jsonpath='{.status.state} {"\n"}'
