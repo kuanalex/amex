@@ -532,7 +532,7 @@ Verifying the service instance upgrade:
 Run the following command and wait for the status to change to Ready:
 
 ```
-oc get db2ucluster \<instance_id\> -o jsonpath=\'{.status.state} {\"\\n\"}\'
+oc get db2ucluster <instance_id> -o jsonpath='{.status.state} {"\n"}'
 ```
 
 Run the following command to check the status of your Db2 service instances:
