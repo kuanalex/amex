@@ -656,7 +656,7 @@ Keep track of your Db2 configuration settings prior to upgrading to ensure you h
 
 You can also [change configuration settings](https://www.ibm.com/docs/en/software-hub/5.2.x?topic=configuration-changing-db2-settings) after you deploy your instance
 
-## 9. All Potential Issues
+## 8. All Potential Issues
 
 1. Setup-instance command will fail with 'imagepullbackoff' errors if the storage test images are missing. Mirror the storage test images ahead of time or exclude the '--run_storage_tests' flag
 
