@@ -697,52 +697,8 @@ cause a variety of issues, as experienced most recently during the E3-IPC1 upgra
 DB2COMM=TCPIP,SSL'. These configurations should persist through a Db2u pod recycle. Keep track of your Db2 configuration settings prior to upgrading to ensure you have a list of settings which you can restore.
 You can also [change configuration settings](https://www.ibm.com/docs/en/software-hub/5.2.x?topic=configuration-changing-db2-settings) after you deploy your instance
 
-## 10. Apply the Day 0 patch (if required)
-
-After you install or upgrade to IBM Software Hub Version 5.2.0, you must apply the [Version 5.2.0 - Day 0
-patch](https://www.ibm.com/support/pages/node/7236425) if you have any services with a dependency on the common core services.
-
-Download the script, [5.2.0-day0-patch-v5.sh] (https://www.ibm.com/support/pages/system/files/inline-files/5.2.0-day0-patch-v5.sh), to your client workstation. Make the script executable:
-
-```
-chmod +x ./5.2.0-day0-patch-v5.sh
-```
-
-If your cluster pulls images from a private container registry, copy the images for the Version 5.2.0 - Day 0 patch from the IBM Entitled Registry to your private container registry:
-
-```
-nohup ./5.2.0-day0-patch-v5.sh \
---load ${PRIVATE_REGISTRY_LOCATION} \
---as ${PRIVATE_REGISTRY_PUSH_USER} \
---with ${PRIVATE_REGISTRY_PUSH_PASSWORD} \
---entitlement ${IBM_ENTITLEMENT_KEY} \
---operator ${PROJECT_CPD_INST_OPERATORS} \
---yes > load_patch_images_output.log &
-```
-
-
-Apply the patch by running the following command:
-
-```
-nohup ./5.2.0-day0-patch-v5.sh \
---operator ${PROJECT_CPD_INST_OPERATORS} \
---yes > patch_install_output.log &
-```
-
-In a duplicate terminal, monitor patch progress by watching the patch_install_output.log file:
-
-```
-tail -f patch_install_output.log
-```
-
-The patch is successfully applied when you see the following log message:
-
-```
-PASS: Apply Day 0 Patch has been successfully completed
-```
-
 This marks the end of the installation of IBM Software Hub, db2oltp and Data Gate
 
-## 11. Validate CPD upgrade (customer acceptance test)
+## 9. Validate CPD upgrade (customer acceptance test)
 
 End of document
