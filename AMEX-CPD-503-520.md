@@ -167,18 +167,18 @@ podman login cp.icr.io -u cp -p ${IBM_ENTITLEMENT_KEY}
 ```
 
 
-## 2. Update cpd-cli and environment variables script for 5.2.1
+## 2. Update cpd-cli and environment variables script for 5.2.0
 
 Download and unpack the latest cpd-cli release
 
 ```
-wget https://github.com/IBM/cpd-cli/releases/download/v14.2.1/cpd-cli-linux-EE-14.2.1.tgz && gzip -d cpd-cli-linux-EE-14.2.1.tgz && tar -xvf cpd-cli-linux-EE-14.2.1.tar && rm -rf cpd-cli-linux-EE-14.2.1.tar
+wget https://github.com/IBM/cpd-cli/releases/download/v14.2.0/cpd-cli-linux-EE-14.2.0.tgz && gzip -d cpd-cli-linux-EE-14.2.0.tgz && tar -xvf cpd-cli-linux-EE-14.2.0.tar && rm -rf cpd-cli-linux-EE-14.2.0.tar
 ```
 
 Add the cpd-cli to your PATH variable, for example
 
 ```
-export PATH=/root/cpd-cli-linux-EE-14.2.1-2542:$PATH
+export PATH=/root/cpd-cli-linux-EE-14.2.0-xxxx:$PATH
 ```
 
 Update your environment variables script
@@ -190,7 +190,7 @@ vi cpd_vars.sh
 Update the Version field and save your changes
 
 ```
-VERSION=5.2.1
+VERSION=5.2.0
 ```
 
 Source your environment variables
@@ -206,7 +206,7 @@ cpd-cli manage restart-container
 ```
 
 
-## 3. Backup CPD 5.2.0 CRs, cpd-instance, and cpd-operators namespaces
+## 3. Backup CPD 5.0.3 CRs, cpd-instance, and cpd-operators namespaces
 
 Create a new directory and store the output of the following commands in that directory
 
@@ -230,7 +230,7 @@ mkdir operatorsbackup && cd operatorsbackup && oc adm inspect -n ${PROJECT_CPD_I
 ```
 
 
-## 4. Upgrade shared cluster components (ibm-cert-manager,ibm-licensing,scheduler)
+## 4. Upgrade shared cluster components (ibm-cert-manager,ibm-licensing)
 
 Determine which project the License Service is in
 
