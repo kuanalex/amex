@@ -445,7 +445,7 @@ oc login OpenShift_URL:port
 ```
 
 ```
-oc set volume statefulset/c-\${DB2U_ID}-db2u -n ${PROJECT_CPD_INST_OPERANDS} --remove --name=db2u-entrypoint-sh
+oc set volume statefulset/c-${DB2U_ID}-db2u -n ${PROJECT_CPD_INST_OPERANDS} --remove --name=db2u-entrypoint-sh
 ```
 
 **Potential issue during the upgrade of Db2 service instance with db2ckupgrade.sh utility**
@@ -488,12 +488,12 @@ sudo rsync -rdgop \--numeric-ids \--checksum \--exclude \'\*TLB\' \--exclude \'\
 
 Prepare for the Db2 instance upgrade by obtaining a list of Db2 service instances:
 
-To obtain value for --profile run cat \$HOME/.cpd-cli/config as root
+To obtain value for --profile run cat $HOME/.cpd-cli/config as root
 
 ```
 cpd-cli service-instance list \
 --service-type=db2oltp \
---profile=\${CPD_PROFILE_NAME}
+--profile=${CPD_PROFILE_NAME}
 ```
 
 Set the INSTANCE_NAME to the name of the service instance:
@@ -506,7 +506,7 @@ Check whether your Db2 service instances are in running state:
 
 ```
 cpd-cli service-instance status ${INSTANCE_NAME} \
---profile=\${CPD_PROFILE_NAME} \
+--profile=${CPD_PROFILE_NAME} \
 --service-type=db2oltp
 ```
 
@@ -515,7 +515,7 @@ Upgrade the db2oltp service instance (est. 10 minutes)
 ```
 cpd-cli service-instance upgrade \
 --service-type=db2oltp \
---instance-name=\${INSTANCE_NAME} \
+--instance-name=${INSTANCE_NAME} \
 --profile=${CPD_PROFILE_NAME}
 ```
 
@@ -696,11 +696,11 @@ If your cluster pulls images from a private container registry, copy the images 
 
 ```
 nohup ./5.2.0-day0-patch-v5.sh \
---load \${PRIVATE_REGISTRY_LOCATION} \
---as \${PRIVATE_REGISTRY_PUSH_USER} \
---with \${PRIVATE_REGISTRY_PUSH_PASSWORD} \
---entitlement \${IBM_ENTITLEMENT_KEY} \
---operator \${PROJECT_CPD_INST_OPERATORS} \
+--load ${PRIVATE_REGISTRY_LOCATION} \
+--as ${PRIVATE_REGISTRY_PUSH_USER} \
+--with ${PRIVATE_REGISTRY_PUSH_PASSWORD} \
+--entitlement ${IBM_ENTITLEMENT_KEY} \
+--operator ${PROJECT_CPD_INST_OPERATORS} \
 --yes > load_patch_images_output.log &
 ```
 
@@ -709,7 +709,7 @@ Apply the patch by running the following command:
 
 ```
 nohup ./5.2.0-day0-patch-v5.sh \
---operator \${PROJECT_CPD_INST_OPERATORS} \
+--operator ${PROJECT_CPD_INST_OPERATORS} \
 --yes > patch_install_output.log &
 ```
 
