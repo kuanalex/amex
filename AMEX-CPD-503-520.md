@@ -551,7 +551,11 @@ cpd-cli service-instance list \
 --service-type=db2oltp
 ```
 
-After upgrading Db2, you need to update the configmap. Run the following commands to patch the instance.json configmap. Run the following command to retrieve the values for the variables, CM_NAME, NAMESPACE and NEW_VERSION:
+After upgrading Db2, you need to update the configmap
+
+Run the following commands to patch the instance.json configmap
+
+Run the following command to retrieve the values for the variables, CM_NAME, NAMESPACE and NEW_VERSION:
 
 ```
 cpd-cli service-instance list --profile=${CPD_PROFILE_NAME} --service-type=db2oltp
@@ -638,13 +642,13 @@ Verifying the service instance upgrade
 Run the following command and wait for the status to change to Completed:
 
 ```
-oc get dginstance \<instance_id\> -o jsonpath=\'{.status.datagateInstanceStatus} {\"\\n\"}\'
+oc get dginstance <instance_id> -o jsonpath='{.status.datagateInstanceStatus} {"\n"}'
 ```
 
 Run the following command and see if the Provision status has changed to UPGRADED:
 
 ```
-watch cpd-cli service-instance list \--profile=${CPD_PROFILE_NAME} \--service-type dg
+watch cpd-cli service-instance list --profile=${CPD_PROFILE_NAME} --service-type dg
 ```
 
 **Potential issue after the upgrade of Data Gate service instances**
