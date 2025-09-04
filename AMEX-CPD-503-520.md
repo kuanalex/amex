@@ -516,6 +516,8 @@ cpd-cli service-instance status ${INSTANCE_NAME} \
 --service-type=db2oltp
 ```
 
+**Before you upgrade Db2 instance, cordon all nodes other than the Db2 node. Remove any taints in the Db2 node as well**
+
 Upgrade the db2oltp service instance (est. 10 minutes)
 
 ```
