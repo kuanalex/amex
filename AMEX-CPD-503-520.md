@@ -456,6 +456,7 @@ folder structures within the Db2u pod. To address this, you will need to create 
 
 ```
 mkdir -p /mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1/NODE0000/BLUDB/T0000001/C0000000.TMP
+
 ```
 
 ```
@@ -474,18 +475,16 @@ chown db2inst1:db2iadm1 /mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1/NOD
 After these steps, confirm that Db2 can start and then once you can connect to Db2, run the below commands as Db2 instance owner to take the backup of the container tags, as this backup will be used to restore the container tags when the pod starts again:
 
 ```
-sudo rsync -rdgop \--numeric-ids \--checksum \--exclude \'\*TLB\' \--exclude \'\*TDA\' \--exclude \'\*TBA\'
-/mnt/tempts/c-db2oltp-1712862624337428-db2u/ /mnt/blumeta0/local-backup
+sudo rsync -rdgop --numeric-ids --checksum --exclude '*TLB' --exclude '*TDA' --exclude '*TBA' /mnt/tempts/c-db2oltp-1712862624337428-db2u/ /mnt/blumeta0/local-backup
 ```
 
 ```
-sudo rsync -rdgop \--numeric-ids \--checksum \--exclude \'\*TLB\' \--exclude \'\*TDA\' \--exclude \'\*TBA\'
-/mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1 /mnt/blumeta0/local-backup
+sudo rsync -rdgop --numeric-ids --checksum --exclude '*TLB' --exclude '*TDA' --exclude '*TBA' /mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1 /mnt/blumeta0/local-backup
 ```
 
 Prepare for the Db2 instance upgrade by obtaining a list of Db2 service instances:
 
-To obtain value for --profile run cat $HOME/.cpd-cli/config as root
+To obtain value for --profile run cat $HOME/.cpd-cli/config as root:
 
 ```
 cpd-cli service-instance list \
