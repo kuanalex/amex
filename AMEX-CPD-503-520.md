@@ -475,12 +475,22 @@ chown db2inst1:db2iadm1 /mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1/NOD
 After these steps, confirm that Db2 can start and then once you can connect to Db2, run the below commands as Db2 instance owner to take the backup of the container tags, as this backup will be used to restore the container tags when the pod starts again:
 
 ```
-sudo rsync -rdgop --numeric-ids --checksum --exclude '*TLB' --exclude '*TDA' --exclude '*TBA' /mnt/tempts/c-db2oltp-1712862624337428-db2u/ /mnt/blumeta0/local-backup
+sudo rsync -rdgop --numeric-ids --checksum --exclude '*TLB' --exclude '*TDA' --exclude '*TBA' /mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1/ /mnt/blumeta0/local-backup
 ```
 
+Confirm the folder structure within /mnt/blumeta0/local-backup:
+
 ```
-sudo rsync -rdgop --numeric-ids --checksum --exclude '*TLB' --exclude '*TDA' --exclude '*TBA' /mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1 /mnt/blumeta0/local-backup
+ls -laR /mnt/blumeta0/local-backup
 ```
+
+Make sure the folder structure is:
+
+```
+ /mnt/blumeta0/local-backup/NODE000/*
+```
+
+Once the folder structure is confirmed, proceed with the Db2 instance upgrade accordingly
 
 Prepare for the Db2 instance upgrade by obtaining a list of Db2 service instances:
 
