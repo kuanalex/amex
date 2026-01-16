@@ -904,7 +904,11 @@ oc exec -it c-db2oltp-1734440804666892-db2u-0 -n cpd-instance -- /bin/bash -c "s
 
 If TEMPSPACE1 has already disappeared, the DB2 database becomes inaccessible with Error: SQL0290N Table space access is not allowed -> See below for troubleshooting
 
-Exec into the db2u engine pod, create the following directory structure, and copy a valid SQLTAG.NAM container tag to the specified location
+Exec into the db2u engine pod as db2inst1, create the following directory structure, and copy a valid SQLTAG.NAM container tag to the specified location
+```
+oc exec -it c-db2oltp-1734440804666892-db2u-0 -n cpd-instance su - db2inst1
+```
+
 ```
 mkdir -p /mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1/NODE0000/BLUDB/T0000001/C0000000.TMP
 ```
