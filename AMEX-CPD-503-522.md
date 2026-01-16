@@ -22,6 +22,7 @@ Storage: FDF 2.9.1
 Internet: proxy
 Private container registry: yes
 Components: ibm-cert-manager,ibm-licensing,cpfs,cpd_platform,db2oltp,datagate
+```
 
 Upgrade flow and steps
 
