@@ -1,4 +1,4 @@
-## BNPP CPD upgrade 5.0.3 to 5.2.2
+## AMEX CPD upgrade 5.0.3 to 5.2.2
 
 ## Author: Alex Kuan (alex.kuan@ibm.com)
 
