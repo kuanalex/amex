@@ -1,9 +1,9 @@
-## AMEX CPD upgrade 5.0.3 to 5.2.2
+## AMEX CPD upgrade 5.2.0 to 5.2.2
 ## Author: Alex Kuan (alex.kuan@ibm.com)
 
 From:
 ```
-CPD: 5.0.3
+CPD: 5.2.0
 OCP: 4.17.31
 Storage: FDF 2.9.1
 Internet: proxy
@@ -23,9 +23,9 @@ Components: ibm-cert-manager,ibm-licensing,cpfs,cpd_platform,db2oltp,datagate
 
 Upgrade flow and steps
 ```
-1. CPD 5.0.3 pre-check
+1. CPD 5.2.0 pre-check
 2. Prepare to run upgrades in a restricted network using a private container registry
-3. Backup CPD 5.0.3 CRs, cpd-instance, and cpd-operators namespaces
+3. Backup CPD 5.2.0 CRs, cpd-instance, and cpd-operators namespaces
 4. Upgrade shared cluster components (ibm-cert-manager,ibm-licensing,scheduler)
 5. Prepare to upgrade an instance of IBM Software Hub
 6. Upgrade an instance of IBM Software Hub
@@ -35,7 +35,7 @@ Upgrade flow and steps
 ```
 
 
-## 1. CPD 5.0.3 pre-check
+## 1. CPD 5.2.0 pre-check
 
 ### Use a client workstation with internet (bastion or infra node) to download OCP and CPD images, and confirm the OS level, ensuring the OS is RHEL 8/9
 ```
@@ -295,7 +295,7 @@ podman ps
 ```
 
 
-## 3. Backup CPD 5.0.3 CRs, cpd-instance and cpd-operators namespaces
+## 3. Backup CPD 5.2.0 CRs, cpd-instance and cpd-operators namespaces
 
 Create a new directory and store the output of the following commands in that directory
 ```
