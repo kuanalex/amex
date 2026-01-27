@@ -1109,51 +1109,6 @@ watch cpd-cli service-instance list --profile=${CPD_PROFILE_NAME} --service-type
 ```
 
 
-### Post Data Gate Instance Upgrade
-
-Run the utility to refresh dg certificates
-
-Find the Data Gate pod
-```
-oc get po | grep data-gate
-```
-
-Remote into the Data Gate pod
-```
-oc exec -it dg-1737478278318519-data-gate-989b845b7-mtpkh -c data-gate-server /bin/bash
-```
-
-Run the refresh-dg-certificate-using-new-cp4d-certificate.sh utility
-```
-/opt/ibm/dwa/bin/migration/refresh-dg-certificate-using-new-cp4d-certificate.sh
-```
-
-Exit the session
-```
-exit
-```
-
-Restart the Data Gate pod
-
-**Important: Potential issue -> If the Data Gate pod is stuck at 4/5, there is a problem, follow the proedure**
-
-Open a shell in the datagate-api container and run the following commands
-```
-rm -rf /head/clone-api/work/jetty-0_0_0_0-8188-clone-api_war-_clone_system-any-/webapp/*
-touch /head/.UPGRADE_INSTANCE
-```
-
-Restart the Data Gate pod
-
-
-### Upgrade the Db2 Data Management Console custom resource (est. 5 minutes):
-
-Log the cpd-cli in to the Red Hat® OpenShift® Container Platform cluster:
-```
-${CPDM_OC_LOGIN}
-```
-
-
 ### Restart Data Gate synchronization
 
 **From the CP4D UI, re-enable Data Gate synchronization**
