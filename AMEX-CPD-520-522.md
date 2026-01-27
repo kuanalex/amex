@@ -172,108 +172,6 @@ source cpd_vars.sh
 ```
 
 
-### Repair IAM Migration (check opreq and move on if there are no problems)
-
-Step 1 - Check if the infrastructure is affected
-
-If ibm-iam-request is Running, continue with Step 2
-
-Review operand request details
-```
-oc get opreq
-```
-
-Example of failed output
-```
-NAME                            AGE     PHASE     CREATED AT
-cloud-native-postgresql-opreq   4d18h   Running   2025-12-25T01:23:45Z
-ibm-iam-request                 4d18h   Pending   2025-12-25T01:23:45Z
-ibm-iam-service                 4d18h   Failed    2025-12-25T01:23:45Z
-postgresql-operator-request     4d18h   Running   2025-12-25T01:23:45Z
-zen-ca-operand-request          4d18h   Running   2025-12-25T01:23:45Z
-zen-service                     4d18h   Running   2025-12-25T01:23:45Z
-```
-
-Identify ODLM pod and search logs for messages related to 'ibm-license-key-applied'
-```
-oc get pods -n cpd-operators |grep operand-deployment-lifecycle-manager
-```
-
-```
-operand-deployment-lifecycle-manager-8696fb7bbb-5sk7p             1/1     Running
-```
-
-```
-oc logs operand-deployment-lifecycle-manager-8696fb7bbb-5sk7p  | grep ibm-license-key-applied
-```
-
-Example of concerning log messages
-```
-E0924 06:39:32.327436 1 reconcile_operand.go:508] Failed to reconcile k8s resource -- Kind: Cluster, NamespacedName: /common-service-db with error: failed to parse
-path .metadata.annotations.ibm-license-key-applied from Secret cpd-operators/postgresql-operator-controller-manager-config: ibm-license-key-applied is not found
-- failed to parse path .metadata.annotations.ibm-license-key-applied from Secret cpd-operators/postgresql-operator-controller-manager-config: ibm-license-key-applied
-is not found
-```
-
-If the above error message is found, the infrastructure is affected by [Known Issue: DT401031](https://www.ibm.com/mysupport/s/defect/aCIKe000000g0riOAA/dt401031?language=fr)
-
-Proceed with the following steps
-
-Delete the create-postgres-license-config job
-```
-oc delete job -n cpd-operators create-postgres-license-config
-```
-
-Delete the ODLM pod
-```
-oc delete pod -n cpd-operators operand-deployment-lifecycle-manager-8696fb7bbb-5sk7p
-```
-
-Wait until the OperandRequest ibm-iam-request is Running
-```
-watch oc get operandrequest
-```
-
-Confirm that the ibm-iam operandrequests are in Running status
-```
-NAME                            AGE     PHASE     CREATED AT
-ibm-iam-request                 4d18h   Running   2025-12-25T01:23:45Z
-ibm-iam-service                 4d18h   Running   2025-12-25T01:23:45Z
-```
-
-Wait for the common-service-db pods to be created
-```
-watch "oc get pods -n cpd-instance |grep common-service-db"
-```
-```
-common-service-db-1              1/1 Running   0  14m
-common-service-db-2              1/1 Running   0  12m
-```
-
-Step 2 - Check if the mongodb service is still running
-```
-oc get service -n cpd-instance | grep -i mongodb
-```
-
-Delete the icp-mongodb and mongodb service
-```
-oc delete service -n cpd-instance icp-mongodb 
-oc delete service -n cpd-instance mongodb
-```
-
-If the deletion does not complete, edit the service yaml and remove the "finalizer" section
-
-Find the ibm-iam pod
-```
-oc get pod -n cpd-operators | grep ibm-iam-operator 
-```
-
-Delete the ibm-iam pod
-```
-oc delete pod -n cpd-operators ibm-iam-operator-7b755fc96d-t49hz
-```
-
-
 ### Save the existing configuration
 ```
 oc get datagateinstanceservices dg1734441701891261 -o yaml > dg1734441701891261.yaml 
@@ -293,6 +191,11 @@ cpd-cli manage restart-container
 ```
 podman ps
 ```
+
+
+### STOP DATA GATE SYNCHRONIZATION
+
+In the CP4D UI, disable data gate synchroinzation using the sync toggle
 
 
 ## 3. Backup CPD 5.2.0 CRs, cpd-instance and cpd-operators namespaces
@@ -571,8 +474,6 @@ oc patch ccs ccs-cr \
 
 ### Proceed with the upgrade of IBM Software Hub
 
-***Important: After you upgrade the services in your environment, ensure that you complete Completing the [catalog-api service migration](https://www.ibm.com/docs/en/software-hub/5.2.x?topic=services-completing-catalog-api-migration)***
-
 Upgrade the required operators and custom resources for the instance:
 
 Log the cpd-cli in to the Red Hat® OpenShift® Container Platform cluster
@@ -584,43 +485,8 @@ Review the license terms for the software that you plan to install:
 ```
 cpd-cli manage get-license \
 --release=${VERSION} \
---license-type=SE
+--license-type=EE
 ```
-
-
-### Prerequisite steps for problem detected on DEV ME
-
-Retrieve the common-service-db-superuser password
-```
-oc get secret common-service-db-superuser -o jsonpath='{.data.password}' | base64 -d
-```
-
-For example
-```
-8ANCuxIfpXvlOwPnaySmkesrxtiit4GrYtAFxameJB2qH6ILOxk39G5T1UF65xze
-```
-
-Connect to common-storage-db and when prompted for the password use the password you retrieved in the previous step
-```
-oc exec -it common-service-db-1 -- /bin/bash
-```
-
-```
-psql -h common-service-db-rw -p 5432 -U postgres -d im
-```
-
-Enter the password and then run the following command
-```
-set search_path = platformdb; SELECT *
-FROM information_schema.table_constraints WHERE constraint_name = 'fk_useratt_fk' AND table_schema = 'platformdb' AND table_name = 'users_attributes';
-```
-
-If it returns no lines, execute the following command
-```
-ALTER TABLE platformdb.users_attributes ADD CONSTRAINT fk_useratt_fk FOREIGN KEY (user_uid) REFERENCES platformdb.users (uid) ON DELETE CASCADE; quit exit
-```
-
-Otherwise, use `quit` followed by `exit`
 
 
 ### Upgrade the required operators and custom resources for the instance (est. 60 minutes):
@@ -646,51 +512,6 @@ oc get ZenService lite-cr -n cpd-instance -o yaml
 
 ```
 oc get ibmcpd ibmcpd-cr -n cpd-instance -o yaml
-```
-
-**Pay close attention to the Zen operator pod logs and the lite-cr and ibmcpd-cr yaml for any errors**
-
-In TS020176018, the setup-instance command failed and the following action needed to be taken
-
-Retrieve the common-service-db superuser password
-```
-oc get secret common-service-db-superuser -o jsonpath='{.data.password}' | base64 -d
-```
-
-For example
-```
-8ANCuxIfpXvlOwPnaySmkesrxtiit4GrYtAFxameJB2qH6ILOxk39G5T1UF65xze
-```
-
-Take note of the primary common-service-db pod name
-```
-oc get cluster.postgresql.k8s.enterprisedb.io -n cpd-instance
-```
-
-For example
-```
-common-service-db
-```
-
-Remote into the common-service-db pod
-```
-oc exec -it common-service-db-3 -- /bin/bash
-```
-
-```
-psql -h common-service-db-rw -p 5432 -U postgres -d im
-```
-
-Enter the password you obtained from the secret
-
-Then, run the following command
-```
-set search_path = platformdb; SELECT * FROM information_schema.table_constraints WHERE constraint_name = 'fk_useratt_fk' AND table_schema = 'platformdb' AND table_name = 'users_attributes';
-```
-
-If the previous command returns no rows, run the following command
-```
-ALTER TABLE platformdb.users_attributes ADD CONSTRAINT fk_useratt_fk FOREIGN KEY (user_uid) REFERENCES platformdb.users (uid) ON DELETE CASCADE; quit exit
 ```
 
 
@@ -720,7 +541,7 @@ In order to have more visibility into each service upgrade, it is recommended to
 
 ### Upgrade Db2 custom resource (est. 15 minutes)
 
-**Important: Before you proceed, make sure Data Gate synchronization has been stopped**
+**IMPORTANT: BEFORE YOU PROCEED, MAKE SURE TO STOP DATA GATE SYNCHRONIZATION**
 
 Before you upgrade the Db2 custom resource, check the status of the zen-metastore-edb pods
 ```
@@ -848,19 +669,19 @@ Confirm the profile is working
 cpd-cli service-instance list --profile=${CPD_PROFILE_NAME}
 ```
 
+Set the INSTANCE_NAME to the name of the service instance ahead of db2oltp service instance upgrade:
+```
+export INSTANCE_NAME=<instance-name>
+```
+
 
 ### Upgrade the db2oltp service instance (est. 10 minutes)
 
-**Potential issue during the upgrade of Db2 service instance with db2ckupgrade.sh utility**
+**IMPORTANT: Potential issue during the upgrade of Db2 service instance with db2ckupgrade.sh utility**
 
 Db2ckupgrade.sh utility runs a job that must be scheduled to the same node as the Db2 engine pod
 
 To work around this issue, restrict the job to run on the same node as the engine pod (using a cordon)
-
-Set the INSTANCE_NAME to the name of the service instance:
-```
-export INSTANCE_NAME=<instance-name>
-```
 
 Initiate the upgrade of db2oltp services instances
 ```
@@ -889,59 +710,6 @@ cpd-cli service-instance list \
 --profile=${CPD_PROFILE_NAME} \
 --service-type=db2oltp
 ```
-
-**Potential issue during the upgrade of Db2 service instance related to TEMPSPACE1**
-
-During the Db2 instance upgrade you may observe any issue with Tempspace1, "Table space access is not allowed." 
-
-This problem is related to the usage of local storage and results in missing files and missing folder structures within the Db2u pod. 
-
-As a workaround, you can run the following commands as db2inst1 before restarting the Db2u engine pod
-```
-oc exec -it c-db2oltp-1734440804666892-db2u-0 -n cpd-instance -- /bin/bash -c "su - db2inst1 -c \"sudo rsync -rdgop --numeric-ids --checksum --exclude '*TLB' --exclude
-'*TDA' --exclude '*TBA' /mnt/tempts/c-db2oltp-1734440804666892-db2u/db2inst1/ /mnt/blumeta0/local-backup\""
-```
-
-If TEMPSPACE1 has already disappeared, the DB2 database becomes inaccessible with Error: SQL0290N Table space access is not allowed -> See below for troubleshooting
-
-Exec into the db2u engine pod as db2inst1, create the following directory structure, and copy a valid SQLTAG.NAM container tag to the specified location
-```
-oc exec -it c-db2oltp-1734440804666892-db2u-0 -n cpd-instance su - db2inst1
-```
-
-```
-mkdir -p /mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1/NODE0000/BLUDB/T0000001/C0000000.TMP
-```
-
-```
-cp SQLTAG.NAM /mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1/NODE0000/BLUDB/T0000001/C0000000.TMP
-```
-
-```
-chmod 600 /mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1/NODE0000/BLUDB/T0000001/C0000000.TMP/SQLTAG.NAM
-```
-
-```
-chown db2inst1:db2iadm1 /mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1/NODE0000/BLUDB/T0000001/C0000000.TMP/SQLTAG.NAM
-```
-
-
-After these steps, confirm that Db2 can start and then once you can connect to Db2, run the below commands as Db2 instance owner to take the backup of the container tags, as this backup will be used to restore the container tags when the pod starts again:
-```
-sudo rsync -rdgop --numeric-ids --checksum --exclude '*TLB' --exclude '*TDA' --exclude '*TBA' /mnt/tempts/c-db2oltp-1712862624337428-db2u/db2inst1/ /mnt/blumeta0/local-backup
-```
-
-Confirm the folder structure within /mnt/blumeta0/local-backup:
-```
-ls -laR /mnt/blumeta0/local-backup
-```
-
-Make sure the folder structure is:
-```
-/mnt/blumeta0/local-backup/NODE0000/*
-```
-
-Once the folder structure is confirmed, proceed with the Db2 instance upgrade accordingly
 
 Check whether your Db2 service instances are in running state:
 ```
@@ -1031,7 +799,15 @@ cpd-cli manage get-cr-status \
 
 ### Upgrade the Data Gate service instances (est. 18 minutes):
 
-**Important: Potential issue after the upgrade of Data Gate service instances**
+**IMPORTANT: Potential issue after initiating Data Gate service instance upgrade**
+
+During Data Gate instance upgrade a dg-1750101262664465-backup-head-job pod runs, but it should be scheduled to any node where Db2 is not running
+
+For this cordon the node hosting Db2, and after the backup-head-job pod is completed, uncordon the same node
+
+If the node hosting Db2u engine pod has a taint, this should also prevent this issue from occurring
+
+**IMPORTANT: Potential issue after the upgrade of Data Gate service instances**
 
 After Data Gate instances have been upgraded, it is possible that the configuration settings of the Db2 target database are not correctly migrated during the upgrade
 
@@ -1111,7 +887,7 @@ watch cpd-cli service-instance list --profile=${CPD_PROFILE_NAME} --service-type
 
 ### Restart Data Gate synchronization
 
-**From the CP4D UI, re-enable Data Gate synchronization**
+**IMPORTANT: From the CP4D UI, re-enable Data Gate synchronization**
 
 
 ## 8. Potential Issues To Be Aware Of
